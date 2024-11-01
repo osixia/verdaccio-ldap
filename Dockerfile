@@ -1,6 +1,9 @@
-FROM verdaccio/verdaccio:5
-
+FROM verdaccio/verdaccio:5 as builder
 USER root
-RUN npm i && npm install verdaccio-ldap
+ENV NODE_ENV=production
 
-USER $VERDACCIO_USER_UID
+RUN apk add --no-cache alpine-sdk python3
+RUN npm i --global-style verdaccio-ldap
+
+FROM verdaccio/verdaccio:5
+COPY --from=builder --chown=$VERDACCIO_USER_UID:root /opt/verdaccio/node_modules/verdaccio-ldap /verdaccio/plugins/verdaccio-ldap
